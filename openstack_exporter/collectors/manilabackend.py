@@ -9,8 +9,48 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
     version = "1.0.0"
     
     def describe(self):
-        # Implement the method, even if it's just a 'pass'
-        pass
+        yield GaugeMetricFamily(
+            'manila_total_capacity_gb',
+            'Total capacity of the Manila backend in GiB'
+        )
+        yield GaugeMetricFamily(
+            'manila_free_capacity_gb',
+            'Free capacity of the Manila backend in GiB'
+        )
+        yield GaugeMetricFamily(
+            'manila_allocated_capacity_gb',
+            'Allocated capacity of the Manila backend in GiB'
+        )
+        yield GaugeMetricFamily(
+            'manila_reserved_percentage',
+            'Reserved percentage of the Manila backend'
+        )
+        yield GaugeMetricFamily(
+            'manila_reserved_snapshot_percentage',
+            'Reserved snapshot percentage of the Manila backend'
+        )
+        yield GaugeMetricFamily(
+            'manila_reserved_share_extend_percentage',
+            'Reserved share extend percentage of the Manila backend'
+        )
+        yield GaugeMetricFamily(
+            'manila_max_over_subscription_ratio',
+            'Max over-subscription ratio of the Manila backend'
+        )
+
+        # InfoMetricFamily for string-based informational metrics
+        yield InfoMetricFamily(
+            'manila_hardware_state_info',
+            'Hardware state of the Manila backend'
+        )
+        yield InfoMetricFamily(
+            'manila_share_backend_name_info',
+            'Share backend name of the Manila backend'
+        )
+        yield InfoMetricFamily(
+            'manila_driver_version_info',
+            'Driver version of the Manila backend'
+        )
         
     def __init__(self, openstack_config, collector_config):
         super().__init__(openstack_config, collector_config)
