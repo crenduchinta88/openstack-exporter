@@ -5,7 +5,7 @@ from openstack_exporter import BaseCollector
 
 LOG = logging.getLogger('openstack_exporter.exporter')
 
-class ManilaBackendCollector(BaseCollector):
+class ManilaBackendCollector(BaseCollector.BaseCollector):
     version = "1.0.0"
 
     def __init__(self, openstack_config, collector_config):
