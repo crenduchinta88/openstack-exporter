@@ -7,7 +7,11 @@ LOG = logging.getLogger('openstack_exporter.exporter')
 
 class ManilaBackendCollector(BaseCollector.BaseCollector):
     version = "1.0.0"
-
+    
+    def describe(self):
+        # Implement the method, even if it's just a 'pass'
+        pass
+        
     def __init__(self, openstack_config, collector_config):
         super().__init__(openstack_config, collector_config)
         self.manila_client = self._manila_client()
