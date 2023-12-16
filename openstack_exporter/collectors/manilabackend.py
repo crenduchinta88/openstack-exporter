@@ -1,14 +1,16 @@
 import logging
+import json
 from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
-
 from openstack_exporter import BaseCollector
 
-LOG = logging.getLogger('openstack_exporter.exporter')
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('openstack_exporter.exporter')
 
 class ManilaBackendCollector(BaseCollector.BaseCollector):
     version = "1.0.0"
-    
+
     def describe(self):
+        # Define metrics for description
         yield GaugeMetricFamily(
             'manila_total_capacity_gb',
             'Total capacity of the Manila backend in GiB'
@@ -57,7 +59,6 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         self.manila_client = self._manila_client()
 
     def _manila_client(self):
-        # Use self.client to interact with Manila
         return self.client.share
 
     def _parse_pool_data(self, pool):
@@ -69,9 +70,18 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             "free_capacity_gb": pool.get('free_capacity_gb', 0),
             "allocated_capacity_gb": pool.get('allocated_capacity_gb', 0),
             "reserved_percentage": pool.get('reserved_percentage', 0),
-            "reserved_snapshot_percentage": pool.get('reserved_snapshot_percentage', 0),
-            "reserved_share_extend_percentage": pool.get('reserved_share_extend_percentage', 0),
-            "max_over_subscription_ratio": pool.get('max_over_subscription_ratio', 1),
+            "reserved_snapshot_percentage": pool.get(
+                'reserved_snapshot_percentage',
+                0
+            ),
+            "reserved_share_extend_percentage": pool.get(
+                'reserved_share_extend_percentage',
+                0
+            ),
+            "max_over_subscription_ratio": pool.get(
+                'max_over_subscription_ratio',
+                1
+            ),
             "hardware_state": pool.get('hardware_state', 'N/A'),
             "share_backend_name": pool.get('share_backend_name', 'N/A'),
             "driver_version": pool.get('driver_version', 'N/A')
@@ -81,58 +91,61 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         return GaugeMetricFamily(name, description, labels=labels, value=value)
 
     def collect(self):
-        pools = self.manila_client.pools(detail=True)
+        endpoint_url = "/v2/scheduler-stats/pools/detail"
+        try:
+            response = self.manila_client.session.get(endpoint_url)
+            if response.status_code == 200:
+                pools_data = json.loads(response.content.decode('utf-8'))
+                pools = pools_data.get('pools', [])
 
-        for pool in pools:
-            data = self._parse_pool_data(pool)
-            labels = [data['name'], data['pool_name'], data['share_backend_name'],
-                      data['driver_version'], data['hardware_state']]
+                for pool in pools:
+                    data = self._parse_pool_data(pool)
+                    labels = [data['name'], data['pool_name'], data['share_backend_name'],
+                              data['driver_version'], data['hardware_state']]
 
-            yield self._create_gauge_metric(
-                'manila_total_capacity_gb',
-                'Total capacity of the pool in GiB',
-                data['total_capacity_gb'],
-                labels
-            )
-
-            yield self._create_gauge_metric(
-                'manila_free_capacity_gb',
-                'Free capacity of the pool in GiB',
-                data['free_capacity_gb'],
-                labels
-            )
-
-            yield self._create_gauge_metric(
-                'manila_allocated_capacity_gb',
-                'Allocated capacity of the pool in GiB',
-                data['allocated_capacity_gb'],
-                labels
-            )
-
-            yield self._create_gauge_metric(
-                'manila_reserved_percentage',
-                'Percentage of capacity reserved in the pool',
-                data['reserved_percentage'],
-                labels
-            )
-
-            yield self._create_gauge_metric(
-                'manila_reserved_snapshot_percentage',
-                'Percentage of capacity reserved for snapshots in the pool',
-                data['reserved_snapshot_percentage'],
-                labels
-            )
-
-            yield self._create_gauge_metric(
-                'manila_reserved_share_extend_percentage',
-                'Percentage of capacity reserved for share extension in the pool',
-                data['reserved_share_extend_percentage'],
-                labels
-            )
-
-            yield self._create_gauge_metric(
-                'manila_max_over_subscription_ratio',
-                'Maximum over-subscription ratio of the pool',
-                data['max_over_subscription_ratio'],
-                labels
-            )
+                    yield self._create_gauge_metric(
+                        'manila_total_capacity_gb',
+                        'Total capacity of the pool in GiB',
+                        data['total_capacity_gb'],
+                        labels
+                    )
+                    yield self._create_gauge_metric(
+                        'manila_free_capacity_gb',
+                        'Free capacity of the pool in GiB',
+                        data['free_capacity_gb'],
+                        labels
+                    )
+                    yield self._create_gauge_metric(
+                        'manila_allocated_capacity_gb',
+                        'Allocated capacity of the pool in GiB',
+                        data['allocated_capacity_gb'],
+                        labels
+                    )
+                    yield self._create_gauge_metric(
+                        'manila_reserved_percentage',
+                        'Percentage of capacity reserved in the pool',
+                        data['reserved_percentage'],
+                        labels
+                    )
+                    yield self._create_gauge_metric(
+                        'manila_reserved_snapshot_percentage',
+                        'Percentage of capacity reserved for snapshots in the pool',
+                        data['reserved_snapshot_percentage'],
+                        labels
+                    )
+                    yield self._create_gauge_metric(
+                        'manila_reserved_share_extend_percentage',
+                        'Percentage of capacity reserved for share extension in the pool',
+                        data['reserved_share_extend_percentage'],
+                        labels
+                    )
+                    yield self._create_gauge_metric(
+                        'manila_max_over_subscription_ratio',
+                        'Maximum over-subscription ratio of the pool',
+                        data['max_over_subscription_ratio'],
+                        labels
+                    )
+            else:
+                logger.error(f"Failed to retrieve data from Manila API. Status code: {response.status_code}")
+        except Exception as e:
+            logger.error(f"Error while collecting Manila backend metrics: {e}")
