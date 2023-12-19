@@ -1,5 +1,6 @@
 import logging
 import json
+import keystoneauth1
 from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
 from manilaclient import client as manila  # Ensure the manilaclient is installed
 from openstack_exporter import BaseCollector
