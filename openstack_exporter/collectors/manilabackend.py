@@ -20,7 +20,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_username = self.config['username']
         os_password = self.config['password']
         os_project_name = self.config['project_name']
-        #api_version = 2  # Adjust the API version as needed
+        api_version = 3.0.1  # Adjust the API version as needed
 
         client_args = {
             'region_name': self.region,
