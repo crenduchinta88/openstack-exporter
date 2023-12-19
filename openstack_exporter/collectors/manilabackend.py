@@ -22,21 +22,24 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_project_name = self.config['project_name']
         api_version = "2.0" # Adjust the API version as needed
 
-        client_args = {
-            'region_name': self.region,
-            'service_type': "share",  # Manila service type
-            'endpoint_type': "publicURL",
-            'insecure': False,
-            'session': self.client.session,
-        }
+        session = keystoneauth1.session.Session(
+            auth=keystoneauth1.identity.v3.Password(
+                auth_url=os_auth_url,
+                username=os_username,
+                password=os_password,
+                project_name=os_project_name,
+                user_domain_name="Default",
+                project_domain_name="Default"
+            )
+        )
 
         return manila.Client(
-            api_version,
-            os_username,
-            os_password,
-            os_project_name,
-            os_auth_url,
-            **client_args,
+            version=api_version,
+            session=session,
+            region_name=self.region,
+            service_type="share",
+            endpoint_type="publicURL",
+            insecure=False
         )
 
     def describe(self):
