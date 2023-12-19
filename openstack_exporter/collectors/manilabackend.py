@@ -36,13 +36,13 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         )
 
         return manila.Client(
+            client_version=client_version,
             version=api_version,
             session=session,
             region_name=self.region,
             service_type="share",
             endpoint_type="publicURL",
-            insecure=False,
-            client_version
+            insecure=False
         )
 
     def describe(self):
