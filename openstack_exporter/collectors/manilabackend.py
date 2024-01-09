@@ -1,6 +1,5 @@
 import logging
 import json
-import keystoneauth1
 from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
 from manilaclient import client as manila  # Ensure the manilaclient is installed
 from openstack_exporter import BaseCollector
@@ -21,7 +20,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_username = self.config['username']
         os_password = self.config['password']
         os_project_name = self.config['project_name']
-        api_version = "2.0" # Adjust the API version as needed
+        api_version = 2  # Adjust the API version as needed
 
         client_args = {
             'region_name': self.region,
@@ -32,12 +31,12 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         }
 
         return manila.Client(
+            api_version,
             os_username,
             os_password,
             os_project_name,
             os_auth_url,
-            api_version=api_version,  # Provide api_version as a keyword argument
-            insecure=False
+            **client_args,
         )
 
     def describe(self):
@@ -49,7 +48,6 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         yield GaugeMetricFamily('manila_reserved_snapshot_percentage', 'Reserved snapshot percentage of the Manila backend')
         yield GaugeMetricFamily('manila_reserved_share_extend_percentage', 'Reserved share extend percentage of the Manila backend')
         yield GaugeMetricFamily('manila_max_over_subscription_ratio', 'Max over-subscription ratio of the Manila backend')
-
         yield InfoMetricFamily('manila_hardware_state_info', 'Hardware state of the Manila backend')
         yield InfoMetricFamily('manila_share_backend_name_info', 'Share backend name of the Manila backend')
         yield InfoMetricFamily('manila_driver_version_info', 'Driver version of the Manila backend')
@@ -98,5 +96,3 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
                 logger.error(f"Failed to retrieve data from Manila API. Status code: {response.status_code}")
         except Exception as e:
             logger.error(f"Error while collecting Manila backend metrics: {e}")
-
-# Ensure the manilaclient package is installed in your environment
