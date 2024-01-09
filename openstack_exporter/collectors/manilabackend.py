@@ -24,8 +24,6 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
 
         client_args = dict(
             region_name=self.region,
-            service_type="volumev3",
-            service_name='',
             os_endpoint='',
             endpoint_type="publicURL",
             insecure=False,
