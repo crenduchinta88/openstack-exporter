@@ -20,15 +20,20 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_username = self.config['username']
         os_password = self.config['password']
         os_project_name = self.config['project_name']
-        api_version = 2.0  # Adjust the API version as needed
+        api_version = "2.0"  # Adjust the API version as needed
 
-        client_args = {
-            'region_name': self.region,
-            'service_type': "share",  # Manila service type
-            'endpoint_type': "publicURL",
-            'insecure': False,
-            'session': self.client.session,
-        }
+        client_args = dict(
+            region_name=self.region,
+            service_type="volumev3",
+            service_name='',
+            os_endpoint='',
+            endpoint_type="publicURL",
+            insecure=False,
+            cacert=None,
+            auth_plugin=None,
+            http_log_debug=True,
+            session=self.client.session,
+        )
 
         return manila.Client(
             api_version,
