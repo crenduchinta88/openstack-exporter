@@ -21,7 +21,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_password = self.config['password']
         os_project_name = self.config['project_name']
         os_endpoint = "https://share-3.qa-de-1.cloud.sap/v2"
-        api_version = 2.65  # Adjust the API version as needed
+        api_version = '2.65'  # Adjust the API version as needed
         
         client_args = dict(
             region_name=self.region,
