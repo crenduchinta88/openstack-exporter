@@ -20,7 +20,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_username = self.config['username']
         os_password = self.config['password']
         os_project_name = self.config['project_name']
-        os_endpoint = "https://share-3.qa-de-1.cloud.sap"
+        os_endpoint = "https://share-3.qa-de-1.cloud.sap/v2"
         api_version = 2.65  # Adjust the API version as needed
         
         client_args = dict(
@@ -77,7 +77,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         return GaugeMetricFamily(name, description, labels=labels, value=value)
 
     def collect(self):
-        endpoint_url = "/v2/scheduler-stats/pools/detail"
+        endpoint_url = "/scheduler-stats/pools/detail"
         try:
             response = self.manila_client.session.get(endpoint_url)
             if response.status_code == 200:
