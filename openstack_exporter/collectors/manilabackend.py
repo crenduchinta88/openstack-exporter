@@ -27,7 +27,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             region_name=self.region,
             os_endpoint=os_endpoint,
             endpoint_type="publicURL",
-            insecure=False,
+            #insecure=False,
             cacert=None,
             auth_plugin=None,
             http_log_debug=True,
