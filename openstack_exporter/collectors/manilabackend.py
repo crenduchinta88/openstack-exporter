@@ -20,14 +20,14 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_username = self.config['username']
         os_password = self.config['password']
         os_project_name = self.config['project_name']
-        os_endpoint = "https://share-3.qa-de-1.cloud.sap/v2"
+        #os_endpoint = "https://share-3.qa-de-1.cloud.sap/v2"
         api_version = '2.65'  # Adjust the API version as needed
         
         client_args = dict(
             region_name=self.region,
             service_type="sharev2",
             service_name="manilav2",
-            os_endpoint='os_endpoint',
+            os_endpoint='',
             endpoint_type="publicURL",
             #insecure=False,
             cacert=None,
@@ -35,8 +35,6 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             http_log_debug=True,
             session=self.client.session,
         )
-
-        logger.debug(f"Service catalog: {self.client.service_catalog}")
         
         return manila.Client(
             api_version,
@@ -81,20 +79,17 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         return GaugeMetricFamily(name, description, labels=labels, value=value)
 
     def collect(self):
-        endpoint_url = "/scheduler-stats/pools/detail"
-        
-        logger.debug(f"Making API request to endpoint: {endpoint_url}") 
-        
-        try:
-            response = self.manila_client.session.get(endpoint_url)
-            if response.status_code == 200:
-                pools_data = json.loads(response.content.decode('utf-8'))
-                pools = pools_data.get('pools', [])
+        LOG.info("Collect Manila backend info. {}".format(
+            self.config['auth_url']
+        ))
 
-                for pool in pools:
-                    data = self._parse_pool_data(pool)
-                    labels = [data['name'], data['pool_name'], data['share_backend_name'],
-                              data['driver_version'], data['hardware_state']]
+        try:
+            pools = self.manila_client.shares.get_share_pools(detail=True)
+
+            for pool in pools:
+                data = self._parse_pool_data(pool)
+                labels = [data['name'], data['pool_name'], data['share_backend_name'],
+                          data['driver_version'], data['hardware_state']]
 
                     yield self._create_gauge_metric('manila_total_capacity_gb', 'Total capacity of the pool in GiB', data['total_capacity_gb'], labels)
                     yield self._create_gauge_metric('manila_free_capacity_gb', 'Free capacity of the pool in GiB', data['free_capacity_gb'], labels)
