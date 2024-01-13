@@ -29,7 +29,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             service_name="manilav2",
             os_endpoint='os_endpoint',
             endpoint_type="publicURL",
-            insecure=False,
+            #insecure=False,
             cacert=None,
             auth_plugin=None,
             http_log_debug=True,
