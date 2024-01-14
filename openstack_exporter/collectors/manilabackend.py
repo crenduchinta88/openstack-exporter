@@ -84,10 +84,10 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         ))
 
         try:
-            pools = self.manila_client.shares.get_share_pools(detail=True)
+            pools = self.manila_client.pools.list(detailed=True)
 
             for pool in pools:
-                data = self._parse_pool_data(pool)
+                data = self._parse_pool_data(pool._info)
                 labels = [data['name'], data['pool_name'], data['share_backend_name'],
                           data['driver_version'], data['hardware_state']]
 
