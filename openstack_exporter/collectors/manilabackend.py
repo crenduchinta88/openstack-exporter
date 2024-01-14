@@ -5,7 +5,7 @@ from manilaclient import client as manila  # Ensure the manilaclient is installe
 from openstack_exporter import BaseCollector
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('openstack_exporter.exporter')
+LOG = logging.getLogger('openstack_exporter.exporter')
 
 class ManilaBackendCollector(BaseCollector.BaseCollector):
     version = "1.0.0"
@@ -100,4 +100,4 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
                 yield self._create_gauge_metric('manila_max_over_subscription_ratio', 'Maximum over-subscription ratio of the pool', data['max_over_subscription_ratio'], labels)
 
         except Exception as e:
-            logger.error(f"Error while collecting Manila backend metrics: {e}")
+            LOG.error(f"Error while collecting Manila backend metrics: {e}")
