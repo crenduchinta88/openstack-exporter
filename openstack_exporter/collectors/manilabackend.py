@@ -58,19 +58,20 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
 
     def _parse_pool_data(self, pool):
         # Parse pool data to extract metrics
+        capabilities = pool.get('capabilities', {})
         return {
             "name": pool.get('name', 'N/A'),
-            "pool_name": pool.get('pool_name', 'N/A'),
-            "total_capacity_gb": pool.get('total_capacity_gb', 0),
-            "free_capacity_gb": pool.get('free_capacity_gb', 0),
-            "allocated_capacity_gb": pool.get('allocated_capacity_gb', 0),
-            "reserved_percentage": pool.get('reserved_percentage', 0),
-            "reserved_snapshot_percentage": pool.get('reserved_snapshot_percentage', 0),
-            "reserved_share_extend_percentage": pool.get('reserved_share_extend_percentage', 0),
-            "max_over_subscription_ratio": pool.get('max_over_subscription_ratio', 1),
-            "hardware_state": pool.get('hardware_state', 'N/A'),
-            "share_backend_name": pool.get('share_backend_name', 'N/A'),
-            "driver_version": str(pool.get('driver_version', 'N/A'))
+            "pool_name": capabilities.get('pool_name', 'N/A'),
+            "total_capacity_gb": capabilities.get('total_capacity_gb', 0),
+            "free_capacity_gb": capabilities.get('free_capacity_gb', 0),
+            "allocated_capacity_gb": capabilities.get('allocated_capacity_gb', 0),
+            "reserved_percentage": capabilities.get('reserved_percentage', 0),
+            "reserved_snapshot_percentage": capabilities.get('reserved_snapshot_percentage', 0),
+            "reserved_share_extend_percentage": capabilities.get('reserved_share_extend_percentage', 0),
+            "max_over_subscription_ratio": capabilities.get('max_over_subscription_ratio', 1),
+            "hardware_state": capabilities.get('hardware_state', 'N/A'),
+            "share_backend_name": capabilities.get('share_backend_name', 'N/A'),
+            "driver_version": str(capabilities.get('driver_version', 'N/A'))
         }
 
     def _create_gauge_metric(self, name, description, value, labels):
