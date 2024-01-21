@@ -142,6 +142,8 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
 
             for pool in pools:
                 data = self._parse_pool_data(pool._info)
+                LOG.debug(f"Pool data: {data}")
+                
                 labels = [
                     data['name'],
                     data['pool_name'],
