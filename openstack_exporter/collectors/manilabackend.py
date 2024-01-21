@@ -1,4 +1,7 @@
 import logging
+import datetime
+from keystoneauth1 import session
+from keystoneauth1.identity import v3
 import json
 from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
 from manilaclient import client as manila  # Ensure the manilaclient is installed
@@ -35,6 +38,8 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             http_log_debug=True,
             session=self.client.session,
         )
+        
+        self.token_expires_at = self.client.session.get_token_expires_at()
         
         return manila.Client(
             api_version,
@@ -79,11 +84,19 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         metric.add_metric(labels, value)
         return metric
 
+    def _check_token_expiry(self):
+        """Check if the token is about to expire and re-authenticate if necessary"""
+        if datetime.datetime.utcnow() >= self.token_expires_at - datetime.timedelta(minutes=30):
+            LOG.info("Token is about to expire, re-authenticating.")
+            self.manila_client = self._manila_client()  # Re-authenticate
+            
     def collect(self):
+        self._check_token_expiry()  # Check token expiry before collecting data
+        
         LOG.info("Collect Manila backend info. {}".format(
             self.config['auth_url']
         ))
-
+        
         try:
             pools = self.manila_client.pools.list(detailed=True)
 
