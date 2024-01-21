@@ -15,7 +15,7 @@
 import logging
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
-from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
+from prometheus_client.core import GaugeMetricFamily
 from manilaclient import client as manila  # Ensure manilaclient is installed
 from openstack_exporter import BaseCollector
 
@@ -178,13 +178,13 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
                 )
                 yield self._create_gauge_metric(
                     'manila_reserved_snapshot_percentage',
-                    'Percentage of capacity reserved for snapshots in the pool',
+                    'Percentage of capacity reserved for snapshots',
                     data['reserved_snapshot_percentage'],
                     labels
                 )
                 yield self._create_gauge_metric(
                     'manila_reserved_share_extend_percentage',
-                    'Percentage of capacity reserved for share extension in the pool',
+                    'Percentage of capacity reserved for share extension',
                     data['reserved_share_extend_percentage'],
                     labels
                 )
