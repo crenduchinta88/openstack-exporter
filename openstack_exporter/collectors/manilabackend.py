@@ -1,8 +1,6 @@
 import logging
-import datetime
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
-import json
 from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
 from manilaclient import client as manila  # Ensure the manilaclient is installed
 from openstack_exporter import BaseCollector
@@ -25,29 +23,24 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         os_project_name = self.config['project_name']
         #os_endpoint = "https://share-3.qa-de-1.cloud.sap/v2"
         api_version = '2.65'  # Adjust the API version as needed
+        os_project_domain_name = self.config['project_domain_name']
+        os_user_domain_name = self.config['user_domain_name']
         
-        client_args = dict(
-            region_name=self.region,
-            service_type="sharev2",
-            service_name="manilav2",
-            os_endpoint='',
-            endpoint_type="publicURL",
-            #insecure=False,
-            cacert=None,
-            auth_plugin=None,
-            http_log_debug=True,
-            session=self.client.session,
-        )
+        auth = v3.Password(auth_url=os_auth_url,
+                           username=os_username,
+                           password=os_password,
+                           project_name=os_project_name,
+                           project_domain_name=os_project_domain_name,
+                           user_domain_name=os_user_domain_name)
         
-        self.token_expires_at = self.client.session.get_token_expires_at()
+        sess = session.Session(auth=auth)
         
         return manila.Client(
-            api_version,
-            os_username,
-            os_password,
-            os_project_name,
-            os_auth_url,
-            **client_args,
+            '2.65',
+            session=sess,
+            region_name=self.region,
+            service_type="sharev2",
+            endpoint_type="publicURL"
         )
 
     def describe(self):
@@ -83,15 +76,8 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         metric = GaugeMetricFamily(name, description, labels=['name', 'pool_name', 'share_backend_name', 'driver_version', 'hardware_state'])
         metric.add_metric(labels, value)
         return metric
-
-    def _check_token_expiry(self):
-        """Check if the token is about to expire and re-authenticate if necessary"""
-        if datetime.datetime.utcnow() >= self.token_expires_at - datetime.timedelta(minutes=30):
-            LOG.info("Token is about to expire, re-authenticating.")
-            self.manila_client = self._manila_client()  # Re-authenticate
             
     def collect(self):
-        self._check_token_expiry()  # Check token expiry before collecting data
         
         LOG.info("Collect Manila backend info. {}".format(
             self.config['auth_url']
