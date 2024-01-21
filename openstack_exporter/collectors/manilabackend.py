@@ -1,8 +1,22 @@
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
 import logging
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from prometheus_client.core import GaugeMetricFamily, InfoMetricFamily
-from manilaclient import client as manila  # Ensure the manilaclient is installed
+from manilaclient import client as manila  # Ensure manilaclient is installed
 from openstack_exporter import BaseCollector
 
 logging.basicConfig(level=logging.DEBUG)
@@ -16,12 +30,11 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
         self.manila_client = self._manila_client()
 
     def _manila_client(self):
-        """Create a Manila client using manilaclient."""
+        """Create a Manila client."""
         os_auth_url = self.config['auth_url']
         os_username = self.config['username']
         os_password = self.config['password']
         os_project_name = self.config['project_name']
-        #os_endpoint = "https://share-3.qa-de-1.cloud.sap/v2"
         api_version = '2.65'  # Adjust the API version as needed
         os_project_domain_name = self.config['project_domain_name']
         os_user_domain_name = self.config['user_domain_name']
@@ -45,14 +58,46 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
 
     def describe(self):
         # Define metrics for description
-        label_names = ['name', 'pool_name', 'share_backend_name', 'driver_version', 'hardware_state']
-        yield GaugeMetricFamily('manila_total_capacity_gb', 'Total capacity of the Manila backend in GiB', labels=label_names)
-        yield GaugeMetricFamily('manila_free_capacity_gb', 'Free capacity of the Manila backend in GiB', labels=label_names)
-        yield GaugeMetricFamily('manila_allocated_capacity_gb', 'Allocated capacity of the Manila backend in GiB', labels=label_names)
-        yield GaugeMetricFamily('manila_reserved_percentage', 'Reserved percentage of the Manila backend', labels=label_names)
-        yield GaugeMetricFamily('manila_reserved_snapshot_percentage', 'Reserved snapshot percentage of the Manila backend', labels=label_names)
-        yield GaugeMetricFamily('manila_reserved_share_extend_percentage', 'Reserved share extend percentage of the Manila backend', labels=label_names)
-        yield GaugeMetricFamily('manila_max_over_subscription_ratio', 'Max over-subscription ratio of the Manila backend', labels=label_names)
+        label_names = [
+            'name', 'pool_name', 'share_backend_name', 
+            'driver_version', 'hardware_state'
+        ]
+        
+        yield GaugeMetricFamily(
+            'manila_total_capacity_gb', 
+            'Total capacity of the Manila backend in GiB', 
+            labels=label_names
+        )
+        yield GaugeMetricFamily(
+            'manila_free_capacity_gb', 
+            'Free capacity of the Manila backend in GiB', 
+            labels=label_names
+        )
+        yield GaugeMetricFamily(
+            'manila_allocated_capacity_gb', 
+            'Allocated capacity of the Manila backend in GiB', 
+            labels=label_names
+        )
+        yield GaugeMetricFamily(
+            'manila_reserved_percentage', 
+            'Reserved percentage of the Manila backend', 
+            labels=label_names
+        )
+        yield GaugeMetricFamily(
+            'manila_reserved_snapshot_percentage', 
+            'Reserved snapshot percentage of the Manila backend', 
+            labels=label_names
+        )
+        yield GaugeMetricFamily(
+            'manila_reserved_share_extend_percentage', 
+            'Reserved share extend percentage of the Manila backend', 
+            labels=label_names
+        )
+        yield GaugeMetricFamily(
+            'manila_max_over_subscription_ratio', 
+            'Max over-subscription ratio of the Manila backend', 
+            labels=label_names
+        )
 
     def _parse_pool_data(self, pool):
         # Parse pool data to extract metrics
@@ -64,16 +109,25 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             "free_capacity_gb": capabilities.get('free_capacity_gb', 0),
             "allocated_capacity_gb": capabilities.get('allocated_capacity_gb', 0),
             "reserved_percentage": capabilities.get('reserved_percentage', 0),
-            "reserved_snapshot_percentage": capabilities.get('reserved_snapshot_percentage', 0),
-            "reserved_share_extend_percentage": capabilities.get('reserved_share_extend_percentage', 0),
-            "max_over_subscription_ratio": capabilities.get('max_over_subscription_ratio', 1),
+            "reserved_snapshot_percentage": capabilities.get(
+                'reserved_snapshot_percentage', 0),
+            "reserved_share_extend_percentage": capabilities.get(
+                'reserved_share_extend_percentage', 0),
+            "max_over_subscription_ratio": capabilities.get(
+                'max_over_subscription_ratio', 1),
             "hardware_state": capabilities.get('hardware_state', 'N/A'),
             "share_backend_name": capabilities.get('share_backend_name', 'N/A'),
             "driver_version": str(capabilities.get('driver_version', 'N/A'))
         }
 
     def _create_gauge_metric(self, name, description, value, labels):
-        metric = GaugeMetricFamily(name, description, labels=['name', 'pool_name', 'share_backend_name', 'driver_version', 'hardware_state'])
+        metric = GaugeMetricFamily(
+            name, description, 
+            labels=[
+                'name', 'pool_name', 'share_backend_name', 
+                'driver_version', 'hardware_state'
+            ]
+        )
         metric.add_metric(labels, value)
         return metric
             
