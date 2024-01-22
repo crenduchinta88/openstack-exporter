@@ -27,7 +27,7 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
 
     def __init__(self, openstack_config, collector_config):
         super().__init__(openstack_config, collector_config)
-        self.manila_client = self._manila_client()
+        self._init_manila_client()
 
     def _init_manila_client(self):
         """Initialize the Manila client."""
