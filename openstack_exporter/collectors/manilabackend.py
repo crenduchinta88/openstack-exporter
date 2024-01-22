@@ -150,13 +150,13 @@ class ManilaBackendCollector(BaseCollector.BaseCollector):
             pools = self.manila_client.pools.list(detailed=True)
 
         except Exception as e:
-        if "requires authentication" in str(e):
-            LOG.info("Authentication required, renewing Manila client")
-            self._renew_manila_client()
-            pools = self.manila_client.pools.list(detailed=True)
-        else:
-            LOG.error(f"Error while collecting Manila backend metrics: {e}")
-            return
+            if "requires authentication" in str(e):
+                LOG.info("Authentication required, renewing Manila client")
+                self._renew_manila_client()
+                pools = self.manila_client.pools.list(detailed=True)
+            else:
+                LOG.error(f"Error while collecting Manila backend metrics: {e}")
+                return
 
         for pool in pools:
             data = self._parse_pool_data(pool._info)
